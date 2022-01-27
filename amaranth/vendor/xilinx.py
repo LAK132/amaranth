@@ -438,6 +438,7 @@ class XilinxPlatform(TemplatedPlatform):
             {% for port_name, pin_name, attrs in platform.iter_port_constraints_bits() -%}
                 {% for attr_name, attr_value in attrs.items() -%}
                     set_property {{attr_name}} {{attr_value}} [get_ports {{port_name|tcl_escape}}]
+                    set_property LOC {{pin_name}} [get_ports {{port_name|tcl_escape}}]
                 {% endfor %}
             {% endfor %}
         """,
