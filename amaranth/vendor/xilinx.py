@@ -417,6 +417,16 @@ class XilinxPlatform(TemplatedPlatform):
         "xc7a35ticsg324-1L": "xc7a35tcsg324-1", # Arty-A7
     }
 
+    _yosys_nextpnr_device = {
+        "xc7a35ti":  "xc7a35t",
+        "xc7a100ti": "xc7a100t",
+    }
+
+    _yosys_nextpnr_family = {
+        "xc7a": "artix7",
+        "xc7z": "zynq7",
+    }
+
     _yosys_nextpnr_required_tools = [
         "yosys",
         "nextpnr-xilinx",
@@ -450,7 +460,7 @@ class XilinxPlatform(TemplatedPlatform):
         """,
         r"""
         {{invoke_tool("nextpnr-xilinx")}}
-            --chipdb /usr/share/nextpnr/xilinx-chipdb/xc7a35t.bin
+            --chipdb /usr/share/nextpnr/xilinx-chipdb/{{platform._yosys_nextpnr_device[platform.device]}}.bin
             --xdc {{name}}.xdc
             --json {{name}}.json
             --write {{name}}_routed.json
@@ -459,11 +469,11 @@ class XilinxPlatform(TemplatedPlatform):
         r"""
         {{invoke_tool("fasm2frames")}}
             --part {{platform._yosys_nextpnr_part_map.get(platform._part, platform._part)}}
-            --db-root /usr/share/nextpnr/prjxray-db/artix7 {{name}}.fasm > {{name}}.frames
+            --db-root /usr/share/nextpnr/prjxray-db/{{platform._yosys_nextpnr_family[platform.device[:4]]}} {{name}}.fasm > {{name}}.frames
         """,
         r"""
         {{invoke_tool("xc7frames2bit")}}
-            --part_file /usr/share/nextpnr/prjxray-db/artix7/{{platform._yosys_nextpnr_part_map.get(platform._part, platform._part)}}/part.yaml
+            --part_file /usr/share/nextpnr/prjxray-db/{{platform._yosys_nextpnr_family[platform.device[:4]]}}/{{platform._yosys_nextpnr_part_map.get(platform._part, platform._part)}}/part.yaml
             --part_name {{platform._yosys_nextpnr_part_map.get(platform._part, platform._part)}}
             --frm_file {{name}}.frames
             --output_file {{name}}.bit
