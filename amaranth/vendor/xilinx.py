@@ -471,13 +471,16 @@ class XilinxPlatform(TemplatedPlatform):
     }
     _yosys_nextpnr_command_templates = [
         r"""
-        DB_DIR={{get_override("nextpnr_dir")|default("/usr/share/nextpnr")}}/prjxray-db
+        PRJXRAY_DB_DIR={{get_override("prjxray_db_dir")|default("/usr/share/nextpnr/prjxray-db")}}
         """,
         r"""
-        CHIPDB_DIR={{get_override("nextpnr_dir")|default("/usr/share/nextpnr")}}/xilinx-chipdb
+        NEXPNR_CHIPDB_DIR={{get_override("nextpnr_db_dir")|default("/usr/share/nextpnr/xilinx-chipdb")}}
         """,
         r"""
         PART={{platform._yosys_nextpnr_part_map.get(platform._part, platform._part)}}
+        """,
+        r"""
+        FAMILY={{platform._yosys_nextpnr_family[platform.device[:4]]}}
         """,
         r"""
         {{invoke_tool("yosys")}}
@@ -485,7 +488,7 @@ class XilinxPlatform(TemplatedPlatform):
         """,
         r"""
         {{invoke_tool("nextpnr-xilinx")}}
-            --chipdb $CHIPDB_DIR/{{platform._yosys_nextpnr_device.get(platform.device, platform.device)}}.bin
+            --chipdb "$NEXPNR_CHIPDB_DIR/$PART.bin"
             --xdc {{name}}.xdc
             --json {{name}}.json
             --write {{name}}_routed.json
@@ -494,11 +497,11 @@ class XilinxPlatform(TemplatedPlatform):
         r"""
         {{invoke_tool("fasm2frames")}}
             --part $PART
-            --db-root $DB_DIR/{{platform._yosys_nextpnr_family[platform.device[:4]]}} {{name}}.fasm > {{name}}.frames
+            --db-root "$PRJXRAY_DB_DIR/$FAMILY" {{name}}.fasm > {{name}}.frames
         """,
         r"""
         {{invoke_tool("xc7frames2bit")}}
-            --part_file $DB_DIR/{{platform._yosys_nextpnr_family[platform.device[:4]]}}/$PART/part.yaml
+            --part_file "$PRJXRAY_DB_DIR/$FAMILY/$PART/part.yaml"
             --part_name $PART
             --frm_file {{name}}.frames
             --output_file {{name}}.bit
