@@ -492,7 +492,7 @@ class XilinxPlatform(TemplatedPlatform):
         """,
         r"""
         {{invoke_tool("yosys")}}
-            -p "synth_xilinx -flatten -abc9 -nobram -arch xc7 -top {{name}}; write_json {{name}}.json" {% for file in platform.iter_files(".v", ".sv", ".vhd", ".vhdl") -%} {{file}} {% endfor %} {{name}}.v
+            -p "{% for top in platform.ghdl_tops -%} ghdl {% for file in platform.iter_files(".vhd", ".vhdl") -%} {{file}} {% endfor %} -e {{top}}; {% endfor %} synth_xilinx -flatten -abc9 -nobram -arch xc7 -top {{name}}; write_json {{name}}.json" {% for file in platform.iter_files(".v", ".sv") -%} {{file}} {% endfor %} {{name}}.v
         """,
         r"""
         {{invoke_tool("nextpnr-xilinx")}}
@@ -520,6 +520,8 @@ class XilinxPlatform(TemplatedPlatform):
 
     def __init__(self, *, toolchain=None):
         super().__init__()
+
+        self.ghdl_tops = set()
 
         # Determine device family.
         device = self.device.lower()
@@ -1176,3 +1178,12 @@ class XilinxPlatform(TemplatedPlatform):
         ]
 
         return m
+
+
+class GhdlInstance(Elaboratable):
+    def __init__(self, type, *args, **kwargs):
+        self.instance = Instance(type, *args, **kwargs)
+
+    def elaborate(self, platform):
+        platform.ghdl_tops.add(self.instance.type)
+        return self.instance.elaborate(platform)
