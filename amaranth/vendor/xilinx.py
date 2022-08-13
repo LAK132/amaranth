@@ -523,6 +523,7 @@ class XilinxPlatform(TemplatedPlatform):
             --part_name $PART
             --frm_file {{name}}.frames
             --output_file {{name}}.bit
+            {{get_override("xc7frames2bit_opts")}}
         """,
     ]
 
