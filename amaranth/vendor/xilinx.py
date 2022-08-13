@@ -617,6 +617,8 @@ class XilinxPlatform(TemplatedPlatform):
             self.oss_toolchain = True
             if self.family != "series7":
                 raise ValueError("Family '{}' is not supported by the yosys nextpnr toolchain".format(self.family))
+            self.ghdl_tops = set()
+            self.ghdl_libraries = dict()
 
         self.toolchain = toolchain
 
@@ -1192,8 +1194,25 @@ class XilinxPlatform(TemplatedPlatform):
 
 class GhdlInstance(Elaboratable):
     def __init__(self, type, *args, **kwargs):
+        self.files = kwargs.pop("files", [])
         self.instance = Instance(type, *args, **kwargs)
 
     def elaborate(self, platform):
+        for filename in self.files:
+            with open(filename, 'r') as f:
+                platform.add_file(str(filename), f)
         platform.ghdl_tops.add(self.instance.type)
         return self.instance.elaborate(platform)
+
+
+class GhdlLibrary(Elaboratable):
+    def __init__(self, name, files):
+        self.library_name = name
+        self.library_files = files
+
+    def elaborate(self, platform):
+        for filename in self.library_files:
+            with open(filename, 'r') as _:
+                pass
+        platform.ghdl_libraries[self.library_name] = self.library_files
+        return Module()
