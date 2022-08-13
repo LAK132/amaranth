@@ -37,13 +37,13 @@ setup(
     description="Amaranth hardware definition language",
     #long_description="""TODO""",
     license="BSD",
-    python_requires="~=3.6",
+    python_requires="~=3.7",
     setup_requires=["wheel", "setuptools", "setuptools_scm"],
     install_requires=[
         "importlib_metadata; python_version<'3.8'",  # for __version__ and amaranth._toolchain.yosys
         "importlib_resources; python_version<'3.9'", # for amaranth._toolchain.yosys
-        "pyvcd~=0.2.2", # for amaranth.pysim
-        "Jinja2>=2.11,<4.0", # for amaranth.build
+        "pyvcd>=0.2.2,<0.4", # for amaranth.pysim
+        "Jinja2~=3.0",  # for amaranth.build
     ],
     extras_require={
         # this version requirement needs to be synchronized with the one in amaranth.back.verilog!
