@@ -476,6 +476,16 @@ class XilinxPlatform(TemplatedPlatform):
                 {% endfor %}
             {% endfor %}
         """,
+        "{{name}}.ys": r"""
+            {% for (library, files) in platform.ghdl_libraries.items() -%}
+            ghdl -a --work={{library}} {% for file in files -%} {{file}} {% endfor %};
+            {% endfor %}
+            {% for top in platform.ghdl_tops -%}
+            ghdl --work=work --latches {% for file in platform.iter_files(".vhd", ".vhdl") -%} {{file}} {% endfor %} -e {{top}};
+            {% endfor %}
+            synth_xilinx -flatten -abc9 -nobram -arch xc7 -top {{name}};
+            write_json {{name}}.json
+        """
     }
     _yosys_nextpnr_command_templates = [
         r"""
@@ -492,7 +502,7 @@ class XilinxPlatform(TemplatedPlatform):
         """,
         r"""
         {{invoke_tool("yosys")}}
-            -p "{% for top in platform.ghdl_tops -%} ghdl {% for file in platform.iter_files(".vhd", ".vhdl") -%} {{file}} {% endfor %} -e {{top}}; {% endfor %} synth_xilinx -flatten -abc9 -nobram -arch xc7 -top {{name}}; write_json {{name}}.json" {% for file in platform.iter_files(".v", ".sv") -%} {{file}} {% endfor %} {{name}}.v
+            -s {{name}}.ys {% for file in platform.iter_files(".v", ".sv") -%} {{file}} {% endfor %} {{name}}.v
         """,
         r"""
         {{invoke_tool("nextpnr-xilinx")}}
