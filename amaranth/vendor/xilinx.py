@@ -106,7 +106,7 @@ class XilinxPlatform(TemplatedPlatform):
     .. rubric:: yosys_nextpnr toolchain
 
     Required tools:
-        * ``yosys``
+        * ``yosys`` (with ``ghdl-yosys-plugin`` for VHDL)
         * ``nextpnr-xilinx``
         * ``fasm2frames``
         * ``xc7frames2bit``
@@ -115,7 +115,9 @@ class XilinxPlatform(TemplatedPlatform):
     ``AMARANTH_ENV_ysosys_nextpnr``, if present.
 
     Available overrides:
-        * ``nextpnr_dir``: overrides toolchain db path.
+        * ``nextpnr_db_dir``: overrides nextpnr-xilinx chip-db path.
+        * ``prjxray_db_dir``: overrides prjxray db path prefix.
+        * ``xc7frames2bit_opts``: adds extra options for ``xc7frames2bit``.
     """
 
     toolchain = None # selected when creating platform
