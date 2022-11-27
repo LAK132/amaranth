@@ -501,7 +501,7 @@ class XilinxPlatform(TemplatedPlatform):
 				read_ilang {{file}}
 			{% endfor %}
 			{% for (library, files) in platform.ghdl_libraries.items() -%}
-				ghdl -a {{get_override("read_vhdl_opts")|options}} --work={{library}} {% for file in files -%} {{file}} {% endfor %};
+				!ghdl -a {{get_override("read_vhdl_opts")|options}} --work={{library}} {% for file in files -%} {{file}} {% endfor %};
 			{% endfor %}
 			{% for top in platform.ghdl_tops -%}
 				ghdl {{get_override("read_vhdl_opts")|options}} --work=work --latches {% for file in platform.iter_files(".vhd", ".vhdl") -%} {{file}} {% endfor %} -e {{top}};
