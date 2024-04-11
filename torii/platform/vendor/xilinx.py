@@ -512,6 +512,9 @@ class XilinxPlatform(TemplatedPlatform):
 			{% for file in platform.iter_files(".il") -%}
 				read_rtlil {{file}}
 			{% endfor %}
+			{% for top in platform.ghdl_tops -%}
+				ghdl {% for file in platform.iter_files(".vhd", ".vhdl") -%} {{file}} {% endfor %} -e {{top}};
+			{% endfor %}
 			read_verilog {{name}}.v
 			{{get_override("script_after_read")|default("# (script_after_read placeholder)")}}
 			synth_xilinx {{get_override("synth_opts")|options}} -flatten -abc9 -nobram -arch xc7 -top {{name}};
@@ -569,8 +572,10 @@ class XilinxPlatform(TemplatedPlatform):
 
 	# Common logic
 
-	def __init__(self, *, toolchain: Literal['Vivado', 'ISE', 'Symbiflow'] = None) -> None:
+	def __init__(self, *, toolchain: Literal['Vivado', 'ISE', 'Symbiflow', 'yosys_nextpnr'] = None) -> None:
 		super().__init__()
+
+		self.ghdl_tops = set()
 
 		# Determine device family.
 		device = self.device.lower()
@@ -1338,3 +1343,13 @@ class XilinxPlatform(TemplatedPlatform):
 		]
 
 		return m
+
+from ...hdl.ir import Elaboratable
+
+class GhdlInstance(Elaboratable):
+	def __init__(self, type, *args, **kwargs):
+		self.instance = Instance(type, *args, **kwargs)
+
+	def elaborate(self, platform):
+		platform.ghdl_tops.add(self.instance.type)
+		return self.instance.elaborate(platform)
